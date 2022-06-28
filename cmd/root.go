@@ -8,8 +8,9 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	diff "meoconbatu/diffdecoding/lib"
 	"os"
+
+	diff "github.com/meoconbatu/diffdecoding/lib"
 
 	"github.com/spf13/cobra"
 )

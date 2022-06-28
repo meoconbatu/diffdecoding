@@ -4,7 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "meoconbatu/diffdecoding/cmd"
+import "github.com/meoconbatu/diffdecoding/cmd"
 
 func main() {
 	cmd.Execute()
