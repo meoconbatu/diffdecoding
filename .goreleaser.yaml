@@ -8,6 +8,8 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - -s -w -X github.com/meoconbatu/diffdecoding/cmd.version='{{.Version}}'
 archives:
     - replacements:
         darwin: Darwin
