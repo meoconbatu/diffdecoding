@@ -1,2 +1,5 @@
 userdata.diff
 dist/
+diffdecoding
+.vscode
+*.json

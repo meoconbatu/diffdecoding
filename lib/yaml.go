@@ -35,11 +35,8 @@ func decodeYAMLPreserveOrder(data []byte) []byte {
 	if err != nil {
 		return data
 	}
-
 	decodeContent(&node)
-
 	out, _ := yaml.Marshal(&node)
-
 	return out
 }
 func decodeContent(document *yaml.Node) {
