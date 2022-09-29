@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"regexp"
 	"strings"
 
@@ -45,9 +46,13 @@ func (d *Diff) PlanChange(r io.Reader, w io.Writer, noColor bool) error {
 	return err
 }
 func parseInput(r io.Reader) (string, string, error) {
-	var s1, s2 string
-	_, err := fmt.Fscanf(r, "%s -> %s", &s1, &s2)
-	if err != nil {
+	var err error
+	// var s1, s2 string
+	// _, err := fmt.Fscanf(r, "%s -> %s", &s1, &s2)
+	b, _ := ioutil.ReadAll(r)
+	parts := strings.Split(string(b), " -> ")
+	s1, s2 := parts[0], parts[1]
+	if s1 == "" || s2 == "" {
 		err = fmt.Errorf("Input does not match format 'a -> b'")
 	}
 	return strings.Trim(s1, "\""), strings.Trim(s2, "\""), err
@@ -190,17 +195,22 @@ func valueWithStyle(node *yaml.Node) string {
 func formatChunks(chunks []diff.Chunk, color *colorstring.Colorize, indentSize int) string {
 	buf := new(bytes.Buffer)
 	indent := strings.Repeat(" ", indentSize)
+	oidx, nidx := 1, 1
 	for _, c := range chunks {
 		for _, line := range c.Added {
-			fmt.Fprintf(buf, color.Color(diffActionSymbol(Create)+fmt.Sprintf("%s%s\n", indent, line)))
+			fmt.Fprintf(buf, fmt.Sprintf("%5s|%-5d ", " ", nidx)+color.Color(diffActionSymbol(Create)+fmt.Sprintf("%s%s\n", indent, line)))
+			nidx++
 		}
 		for _, line := range c.Deleted {
-			fmt.Fprintf(buf, color.Color(diffActionSymbol(Delete)+fmt.Sprintf("%s%s\n", indent, line)))
+			fmt.Fprintf(buf, fmt.Sprintf("%5d|%5s ", oidx, " ")+color.Color(diffActionSymbol(Delete)+fmt.Sprintf("%s%s\n", indent, line)))
+			oidx++
 		}
 		delimitedLine := indent + " ...\n"
 		if len(c.Equal) > 0 {
 			fmt.Fprint(buf, delimitedLine)
 		}
+		oidx += len(c.Equal)
+		nidx += len(c.Equal)
 	}
 	return strings.TrimRight(buf.String(), "\n")
 }
