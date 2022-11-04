@@ -35,9 +35,8 @@ func (obj object) toString(color *colorstring.Colorize) string {
 	fmt.Fprintf(buf, color.Color(fmt.Sprintf(diffActionSymbol(obj.diffType)+"- path: %s\n", obj.key)))
 	for _, chunks := range obj.keychunks {
 		fmt.Fprintf(buf, chunks.toString(color, 2))
-		fmt.Fprintf(buf, "\n")
 	}
-	return strings.TrimRight(buf.String(), "\n")
+	return buf.String()
 }
 
 type keychunk struct {
@@ -63,7 +62,7 @@ func (kc keychunk) toString(color *colorstring.Colorize, indentSize int) string 
 		sb.WriteString(color.Color(diffActionSymbol(kc.diffType) + fmt.Sprintf("%s%s:\n", indent, kc.key)))
 		sb.WriteString(formatChunks(kc.chunks, color, indentSize+2))
 	}
-	return strings.TrimRight(sb.String(), "\n")
+	return sb.String()
 }
 func diffMapToChunks(m1, m2 map[string]interface{}) []keychunk {
 	diffs := make([]keychunk, 0)

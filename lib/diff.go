@@ -124,9 +124,9 @@ func (d *Diff) diffYAML(s1, s2 string) string {
 	m1, m2 := toMapPreserveStyle(s1), toMapPreserveStyle(s2)
 	sb := strings.Builder{}
 	for _, obj := range diffMap(m1, m2) {
-		sb.WriteString(obj.toString(d.color) + "\n")
+		sb.WriteString(obj.toString(d.color))
 	}
-	return strings.TrimRight(sb.String(), "\n")
+	return sb.String()
 }
 func toMap(s string) map[string]map[string]interface{} {
 	data := []byte(s)
@@ -196,13 +196,14 @@ func formatChunks(chunks []diff.Chunk, color *colorstring.Colorize, indentSize i
 	buf := new(bytes.Buffer)
 	indent := strings.Repeat(" ", indentSize)
 	oidx, nidx := 1, 1
+	padding := 5
 	for _, c := range chunks {
 		for _, line := range c.Added {
-			fmt.Fprintf(buf, fmt.Sprintf("%5s|%-5d ", " ", nidx)+color.Color(diffActionSymbol(Create)+fmt.Sprintf("%s%s\n", indent, line)))
+			fmt.Fprintf(buf, fmt.Sprintf("%*s|%-*d ", padding, " ", padding, nidx)+color.Color(diffActionSymbol(Create)+fmt.Sprintf("%s%s\n", indent, line)))
 			nidx++
 		}
 		for _, line := range c.Deleted {
-			fmt.Fprintf(buf, fmt.Sprintf("%5d|%5s ", oidx, " ")+color.Color(diffActionSymbol(Delete)+fmt.Sprintf("%s%s\n", indent, line)))
+			fmt.Fprintf(buf, fmt.Sprintf("%*d|%*s ", padding, oidx, padding, " ")+color.Color(diffActionSymbol(Delete)+fmt.Sprintf("%s%s\n", indent, line)))
 			oidx++
 		}
 		delimitedLine := indent + " ...\n"
@@ -212,7 +213,7 @@ func formatChunks(chunks []diff.Chunk, color *colorstring.Colorize, indentSize i
 		oidx += len(c.Equal)
 		nidx += len(c.Equal)
 	}
-	return strings.TrimRight(buf.String(), "\n")
+	return buf.String()
 }
 func diffActionSymbol(action Action) string {
 	switch action {

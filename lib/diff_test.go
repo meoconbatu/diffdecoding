@@ -20,9 +20,9 @@ func TestDiffYAML_OnePath(t *testing.T) {
 		{"delete one-line field", "owner: root:root\n  encoding: b64", "encoding: b64", "-  owner: root:root"},
 		{"add one-line field", "", "owner: root:user", "+  owner: root:user"},
 		{"no change content field", "encoding: text/plain\n  content: |\n    line1\n    line2", "encoding: text/plain\n  content: |\n     line1\n     line2", ""},
-		{"change content field", "encoding: text/plain\n  content: |\n     line1\n     line2", "encoding: text/plain\n  content: |\n     line3", "   content:\n-    line1\n-    line2\n+    line3"},
-		{"add content field", "", "encoding: text/plain\n  content: |\n     line1\n     line2", "+  content:\n+    line1\n+    line2\n+  encoding: text/plain"},
-		{"delete content field", "encoding: text/plain\n  content: |\n     line1\n     line2", "", "-  content:\n-    line1\n-    line2\n-  encoding: text/plain"},
+		{"change content field", "encoding: text/plain\n  content: |\n     line1\n     line2", "encoding: text/plain\n  content: |\n     line3", "   content:\n    1|      -    line1\n    2|      -    line2\n     |1     +    line3"},
+		{"add content field", "", "encoding: text/plain\n  content: |\n     line1\n     line2", "+  content:\n     |1     +    line1\n     |2     +    line2\n+  encoding: text/plain"},
+		{"delete content field", "encoding: text/plain\n  content: |\n     line1\n     line2", "", "-  content:\n    1|      -    line1\n    2|      -    line2\n-  encoding: text/plain"},
 		{"change and diff order", "owner: root:root\n  encoding: b64", "encoding: base64\n  owner: root:user", "-  encoding: b64\n+  encoding: base64\n-  owner: root:root\n+  owner: root:user"},
 		{"preserve single quoted style", ``, `permissions: '0644'`, "+  permissions: '0644'"},
 		{"preserve double quoted style", `permissions: '0644'`, `permissions: "0644"`, "-  permissions: '0644'\n+  permissions: \"0644\""},
@@ -46,8 +46,8 @@ func TestDiffYAML_OnePath_Encoding(t *testing.T) {
 		m1, m2 string
 		expect string
 	}{
-		{"add", ``, "content: bGluZTEKbGluZTIK\n  encoding: b64", "+  content:\n+    line1\n+    line2\n+  encoding: b64"},
-		{"delete", "content: bGluZTEKbGluZTIK\n  encoding: b64", ``, "-  content:\n-    line1\n-    line2\n-  encoding: b64"},
+		{"add", ``, "content: bGluZTEKbGluZTIK\n  encoding: b64", "+  content:\n     |1     +    line1\n     |2     +    line2\n+  encoding: b64"},
+		{"delete", "content: bGluZTEKbGluZTIK\n  encoding: b64", ``, "-  content:\n    1|      -    line1\n    2|      -    line2\n-  encoding: b64"},
 		{"no change", "content: bGluZTEKbGluZTIK\n  encoding: b64", "content: bGluZTEKbGluZTIK\n  encoding: b64", ""},
 	}
 	d := New()
@@ -57,7 +57,6 @@ func TestDiffYAML_OnePath_Encoding(t *testing.T) {
 			actual := d.diffYAML(buildYAML(tt.m1), buildYAML(tt.m2))
 			if !assert.Equal(t, buildDiff(tt.expect), actual) {
 				fmt.Println(actual)
-				fmt.Println()
 				fmt.Println(buildDiff(tt.expect))
 			}
 		})
@@ -102,10 +101,11 @@ write_files:
 -  owner: root:root
 +- path: /etc/sysconfig/selinux3
 +  content:
-+    line1
-+    line2
+     |1     +    line1
+     |2     +    line2
 +  encoding: text/plain
-+  owner: root:root`},
++  owner: root:root
+`},
 	}
 
 	d := New()
@@ -133,5 +133,6 @@ func buildDiff(a string) string {
 		return ""
 	}
 	return fmt.Sprintf(` - path: /etc/sysconfig/selinux
-%s`, a)
+%s
+`, a)
 }
